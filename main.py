@@ -1,5 +1,5 @@
 import pygame
-
+import PIL
 pygame.init()
 
 f = pygame.display.set_mode((500, 500),pygame.RESIZABLE)
@@ -39,22 +39,23 @@ class Laby(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = maze
-        self.vitesse = 10
+        self.vitesse = 50
         self.rect = self.image.get_rect()
-        self.rect.x = -1500
-        self.rect.y = -1500
+        self.x = -1500
+        self.y = -1500
+        self.fakepos=[self.x,self.y]
 
     def droite(self):
-        self.rect.x -= self.vitesse
+        self.x -= self.vitesse
 
     def gauche(self):
-        self.rect.x += self.vitesse
+        self.x += self.vitesse
 
     def up(self):
-        self.rect.y += self.vitesse
+        self.y += self.vitesse
 
     def down(self):
-        self.rect.y -= self.vitesse
+        self.y -= self.vitesse
 
 
 fonds = pygame.sprite.Group()
@@ -70,38 +71,35 @@ while boucle:
     pygame.display.flip()
     fps.tick(60)
     # appliquer les images sur le jeu:
-    f.blit(bg, (0,0) )
-    f.blit(mazinger.image, mazinger.rect)
-
+    f.fill(0)
+    f.blit(mazinger.image, mazinger.fakepos)
+    mazinger.fakepos[0]+=(mazinger.x-mazinger.fakepos[0])/7
+    mazinger.fakepos[1]+=(mazinger.y-mazinger.fakepos[1])/7
     # key listener
     if presser.get(pygame.K_RIGHT):
         mazinger.droite()
         if not f.get_at((int(monique.rect.x + monique.rect.width), int(monique.rect.y + monique.rect.height / 2))) == (
                 255, 255, 255, 255):
-            f.blit(mazinger.image, mazinger.rect)
             for j in range(1): 
                 mazinger.gauche()
     elif presser.get(pygame.K_LEFT):
         mazinger.gauche()
-        f.blit(mazinger.image, mazinger.rect)
         if not f.get_at((int(monique.rect.x), int(monique.rect.y + monique.rect.height / 2))) == (
                 255, 255, 255, 255):
             for j in range(1):
                 mazinger.droite()
     elif presser.get(pygame.K_UP):
         mazinger.up()
-        f.blit(mazinger.image, mazinger.rect)
+       
         if not f.get_at((int(monique.rect.x + monique.rect.width / 2), int(monique.rect.y))) == (
                 255, 255, 255, 255):
             for j in range(1):
                 mazinger.down()
     elif presser.get(pygame.K_DOWN):
         mazinger.down()
-        f.blit(mazinger.image, mazinger.rect)
         if not f.get_at((int(monique.rect.x + monique.rect.width / 2), int(monique.rect.y + monique.rect.height))) == (
                 255, 255, 255, 255):
-            for j in range(1):
-                mazinger.up()
+            mazinger.up()
     elif presser.get(pygame.K_SPACE):
         if mazinger.vitesse==10:
             mazinger.vitesse=25
@@ -110,12 +108,14 @@ while boucle:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            boucle = False  # la boucle n'est plus vraie dons on arrete de trourner
+            boucle = False 
             print("fin du jeu")
-            pygame.quit()  # fermeture de fenetre
-        # si une touche a été relaché
+            pygame.quit()  
+        
         elif event.type == pygame.KEYDOWN:
             presser[event.key] = True
         elif event.type == pygame.KEYUP:
             presser[event.key] = False
+        elif event.type==pygame.VIDEORESIZE:
+            mazinger.vitesse=1
     f.blit(monique.image, monique.rect)
